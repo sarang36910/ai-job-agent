@@ -183,7 +183,7 @@ if st.button("Get Answer"):
                     }
                 ],
 
-                model="llama3-70b-8192",
+                model="llama-3.3-70b-versatile",
 
             )
 
@@ -205,3 +205,4 @@ if st.button("Get Answer"):
 if st.checkbox("Show Raw Data"):
 
     st.dataframe(df)
+
