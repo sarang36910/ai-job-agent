@@ -7,10 +7,15 @@ import time
 
 conn = psycopg2.connect(
 
-    host="localhost",
-    database="job_agent",
-    user="postgres",
-    password="123"
+    host="aws-1-ap-northeast-1.pooler.supabase.com",
+
+    database="postgres",
+
+    user="postgres.idszbogxpqxoberjaoga",
+
+    password="JobAgent@123",
+
+    port=6543
 
 )
 
