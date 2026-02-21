@@ -1,0 +1,30 @@
+name: Job Scraper Automation
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # Runs daily at 3 AM UTC (8:30 AM India)
+
+  workflow_dispatch:      # Allows manual run
+
+jobs:
+  scrape:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install playwright psycopg2-binary pandas
+          playwright install
+
+      - name: Run scraper
+        run: python large_scraper.py
