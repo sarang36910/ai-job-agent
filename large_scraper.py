@@ -82,9 +82,26 @@ roles = [
 
 with sync_playwright() as p:
 
-    browser = p.chromium.launch(headless=True)
+    browser = p.chromium.launch(
+    headless=True,
+    args=[
+        "--no-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-blink-features=AutomationControlled"
+    ]
+)
 
-    page = browser.new_page()
+context = browser.new_context(
+
+    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+
+    viewport={"width": 1920, "height": 1080},
+
+    java_script_enabled=True
+
+)
+
+page = context.new_page()
 
 
     for role in roles:
@@ -99,55 +116,46 @@ with sync_playwright() as p:
             print(url)
 
 
-            try:
+try:
 
-                page.goto(url, timeout=60000)
+    page.goto(url, timeout=60000)
 
-                time.sleep(3)
+    # wait for page load
+    page.wait_for_timeout(5000)
 
+    # wait until jobs are visible (VERY IMPORTANT)
+    page.wait_for_selector("article", timeout=10000)
 
-                jobs = page.query_selector_all("article")
+    jobs = page.query_selector_all("article")
 
+    print("Found jobs:", len(jobs))
 
-                print("Found jobs:", len(jobs))
+    for job in jobs:
 
+        title = job.query_selector("a.title").inner_text()
 
-                for job in jobs:
+        company = job.query_selector(".comp-name").inner_text()
 
-                    try:
+        experience = job.query_selector(".expwdth").inner_text()
 
-                        title = job.query_selector("a.title").inner_text()
+        location = job.query_selector(".locWdth").inner_text()
 
-                        company = job.query_selector(".comp-name").inner_text()
+        link = job.query_selector("a.title").get_attribute("href")
 
-                        experience = job.query_selector(".expwdth").inner_text()
+        cursor.execute(
+            """
+            INSERT INTO jobs (title, company, experience, location, link)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (link) DO NOTHING
+            """,
+            (title, company, experience, location, link)
+        )
 
-                        location = job.query_selector(".locWdth").inner_text()
+        conn.commit()
 
-                        link = job.query_selector("a.title").get_attribute("href")
+except Exception as e:
 
-
-                        cursor.execute("""
-
-                        INSERT INTO jobs (title, company, experience, location, link)
-
-                        VALUES (%s, %s, %s, %s, %s)
-
-                        ON CONFLICT (link) DO NOTHING
-
-                        """,
-
-                        (title, company, experience, location, link)
-
-                        )
-
-
-                        conn.commit()
-
-
-                    except Exception as e:
-
-                        print("Job error:", e)
+    print("Page error:", e)
 
 
             except Exception as e:
@@ -164,3 +172,4 @@ conn.close()
 
 
 print("Scraping completed successfully")
+
