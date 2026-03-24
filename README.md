@@ -168,7 +168,7 @@ streamlit run app.py
 
 # 👨‍💻 Author
 
-**Sarange**
+**Sarang**
 
 Data Analyst | Aspiring Data Scientist
 
